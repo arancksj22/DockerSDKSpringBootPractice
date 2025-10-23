@@ -25,6 +25,7 @@ public class MinimalTestDockerController {
 
     @GetMapping("/minimal-test-docker")
     public ResponseEntity<String> testDockerMinimal() {
+        System.out.println("GET IS HEARD");
         String containerId = null;
         try {
             log.info("Creating container from image: {}", HELLO_WORLD_IMAGE);
