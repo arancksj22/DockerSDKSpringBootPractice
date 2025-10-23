@@ -1,3 +1,4 @@
+package com.example.DockerSDKPractice; // Ensure this package matches your project structure
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -5,8 +6,8 @@ import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig; // Needed for AutoRemove
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.slf4j.Logger; // Import standard SLF4J Logger
+import org.slf4j.LoggerFactory; // Import standard SLF4J LoggerFactory
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,11 +22,12 @@ public class MinimalTestDockerController {
     // Standard constructor injection (no Lombok)
     public MinimalTestDockerController(DockerClient dockerClient) {
         this.dockerClient = dockerClient;
+        log.info(">>>> MinimalTestDockerController Bean CREATED! <<<<"); // <-- ADDED LOGGING
     }
 
     @GetMapping("/minimal-test-docker")
     public ResponseEntity<String> testDockerMinimal() {
-        System.out.println("GET IS HEARD");
+        log.info(">>>> Accessed /minimal-test-docker endpoint! <<<<"); // <-- ADDED LOGGING
         String containerId = null;
         try {
             log.info("Creating container from image: {}", HELLO_WORLD_IMAGE);
