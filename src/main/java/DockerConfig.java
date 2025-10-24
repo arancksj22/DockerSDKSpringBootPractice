@@ -4,12 +4,14 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.jaxrs.JerseyDockerHttpClient;
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.time.Duration;
 
 @Configuration
 public class DockerConfig {
@@ -24,13 +26,12 @@ public class DockerConfig {
 
         log.info(">>>> Docker Host configured as: {} <<<<", config.getDockerHost());
 
-        // Use Jersey transport which supports Windows named pipes
-        // Timeouts are in milliseconds (Integer)
-        DockerHttpClient httpClient = new JerseyDockerHttpClient.Builder()
+        // Use ApacheDockerHttpClient which supports Windows named pipes
+        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                 .dockerHost(config.getDockerHost())
                 .sslConfig(config.getSSLConfig())
-                .connectTimeout(30000)  // 30 seconds in milliseconds
-                .readTimeout(45000)     // 45 seconds in milliseconds
+                .connectionTimeout(Duration.ofSeconds(30))
+                .responseTimeout(Duration.ofSeconds(45))
                 .build();
 
         DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient);
