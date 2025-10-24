@@ -4,15 +4,11 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.netty.NettyDockerCmdExecFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-// Remove unused Duration import if not needed elsewhere
-// import java.time.Duration;
 
 @Configuration
 public class DockerConfig {
@@ -21,19 +17,20 @@ public class DockerConfig {
 
     @Bean
     public DockerClient dockerClient() {
+        // Create config - will auto-detect Windows named pipe
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost("npipe:////./pipe/docker_engine")
                 .build();
 
-        log.info(">>>> Docker Host detected/configured as: {} <<<<", config.getDockerHost());
+        log.info(">>>> Docker Host configured as: {} <<<<", config.getDockerHost());
 
-        // Use the MINIMAL HttpClient5 Builder configuration
-        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
-                .dockerHost(config.getDockerHost())
-                .sslConfig(config.getSSLConfig())
-                // Removed maxConnections, connectionTimeout, responseTimeout
-                .build();
+        // Use Netty factory explicitly (better for Windows named pipes)
+        DockerClient dockerClient = DockerClientImpl.getInstance(
+                config,
+                new NettyDockerCmdExecFactory()
+        );
 
-        return DockerClientImpl.getInstance(config, httpClient);
+        log.info(">>>> DockerClient created successfully <<<<");
+
+        return dockerClient;
     }
 }
