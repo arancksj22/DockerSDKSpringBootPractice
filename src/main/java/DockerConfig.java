@@ -1,10 +1,11 @@
-package com.example.DockerSDKPractice;
+package com.example.DockerSDKPractice; // Ensure this package matches
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
+// Correct import for Apache HttpClient5 transport
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient; // <-- Use HttpClient5 transport
 import com.github.dockerjava.transport.DockerHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,24 +21,26 @@ public class DockerConfig {
 
     @Bean
     public DockerClient dockerClient() {
-        // Auto-detect Docker configuration (will find the named pipe)
+        // Explicitly set the correct Windows named pipe host
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost("npipe:////./pipe/docker_engine") // Use correct Windows pipe
                 .build();
 
-        log.info(">>>> Docker Host configured as: {} <<<<", config.getDockerHost());
+        log.info(">>>> Docker Host detected/configured as: {} <<<<", config.getDockerHost());
 
-        // Use ApacheDockerHttpClient which supports Windows named pipes
+        // Use Apache HttpClient5 Builder (Minimal Configuration)
         DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
                 .dockerHost(config.getDockerHost())
                 .sslConfig(config.getSSLConfig())
+                // Keep timeouts for robustness, but remove maxConnections for simplicity
                 .connectionTimeout(Duration.ofSeconds(30))
                 .responseTimeout(Duration.ofSeconds(45))
                 .build();
 
-        DockerClient dockerClient = DockerClientImpl.getInstance(config, httpClient);
+        log.info(">>>> Using Apache HttpClient5 Transport <<<<");
 
-        log.info(">>>> DockerClient created successfully <<<<");
-
-        return dockerClient;
+        // Instantiate the DockerClient using the config and the HttpClient built by the Apache builder
+        return DockerClientImpl.getInstance(config, httpClient);
     }
 }
+
