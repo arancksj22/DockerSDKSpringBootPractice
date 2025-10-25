@@ -3,13 +3,16 @@ package com.example.DockerSDKPractice; // Ensure this package matches
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder; // Use the builder
+import com.github.dockerjava.core.DockerClientImpl;
+// Correct import for Apache HttpClient5 transport
+import com.github.dockerjava.httpclient5.ApacheDockerHttpClient; // <-- Use HttpClient5 transport
+import com.github.dockerjava.transport.DockerHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-// *** No HttpClient, Netty, or Duration imports are needed here ***
+import java.time.Duration;
 
 @Configuration
 public class DockerConfig {
@@ -18,27 +21,27 @@ public class DockerConfig {
 
     @Bean
     public DockerClient dockerClient() {
-        // Let DefaultConfig detect the host (should find the named pipe on Windows)
-        // If necessary for debugging, explicitly set it:
-        // .withDockerHost("npipe:////./pipe/docker_engine")
+        // Explicitly set the correct Windows named pipe host AGAIN
         DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                // You can try letting it auto-detect first, or explicitly set the pipe:
-                .withDockerHost("npipe:////./pipe/docker_engine")
+                .withDockerHost("npipe:////./pipe/docker_engine") // Use correct Windows pipe
                 .build();
 
-        // Log what host it detected/used
-        log.info(">>>> Docker Host detected/configured as: {} <<<<", config.getDockerHost());
+        // Log the host that SHOULD be used
+        log.info(">>>> Docker Host configured in DockerClientConfig as: {} <<<<", config.getDockerHost());
 
-        log.info(">>>> Attempting to build DockerClient with default transport (expecting JUnixSocket due to classpath changes) <<<<");
+        // Use Apache HttpClient5 Builder
+        // Pass the config object's host setting explicitly to the builder
+        DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()
+                .dockerHost(config.getDockerHost()) // Ensure this uses the correct config value
+                .sslConfig(config.getSSLConfig())
+                .connectionTimeout(Duration.ofSeconds(30))
+                .responseTimeout(Duration.ofSeconds(45))
+                .build();
 
-        // Use DockerClientBuilder.getInstance with only the config.
-        // It should automatically find and use junixsocket if the other HTTP transports
-        // are removed from the pom.xml classpath.
-        DockerClient dockerClient = DockerClientBuilder.getInstance(config).build();
+        log.info(">>>> Using Apache HttpClient5 Transport, configured for host: {} <<<<", config.getDockerHost());
 
-        log.info(">>>> DockerClient created successfully (hopefully using JUnixSocket) <<<<");
-
-        return dockerClient;
+        // Instantiate the DockerClient using the config and the HttpClient
+        return DockerClientImpl.getInstance(config, httpClient);
     }
 }
 
