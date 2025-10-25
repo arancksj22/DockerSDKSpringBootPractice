@@ -43,6 +43,13 @@
 			<!-- REMOVED <scope>test</scope> -->
 		</dependency>
 
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainers.version}</version> <!-- Make sure this matches your core testcontainers version -->
+			<scope>test</scope>
+		</dependency>
+
 		<!-- Keep this for regular Spring Boot testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
