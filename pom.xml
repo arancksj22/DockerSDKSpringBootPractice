@@ -34,15 +34,18 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		<!-- Keep the main docker-java dependency -->
 		<dependency>
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java</artifactId>
-			<version>3.3.6</version>
+			<version>3.2.13</version> <!-- DOWNGRADE -->
 		</dependency>
+
+		<!-- Use HttpClient5 transport -->
 		<dependency>
 			<groupId>com.github.docker-java</groupId>
 			<artifactId>docker-java-transport-httpclient5</artifactId>
-			<version>3.3.6</version>
+			<version>3.2.13</version> <!-- DOWNGRADE -->
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
